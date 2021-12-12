@@ -20,6 +20,18 @@
 
 以下给出的端口地址，前端在调用的时候都需要在最前面加上/api，发给80端口，由nginx转发到后端的8888端口上。
 
+### 错误处理
+
+如果HTTP的响应码不是200，则响应体的格式一律为
+
+```
+{
+    "timestamp": "Sun Dec 12 17:43:30 CST 2021",
+    "status": int,
+    "message": string
+}
+```
+
 
 
 ## 用户登录
@@ -27,6 +39,8 @@
 #### 位置 /auth/login
 
 #### 权限：无需任何权限
+
+#### 方法 POST
 
 ### 请求体
 
@@ -68,3 +82,63 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
   "exp": 1639305810
 }
 ```
+
+
+
+## 获得所有的部门信息
+
+#### 位置 /all/all_department_info
+
+#### 权限：无
+
+#### 方法 GET
+
+### 请求参数：无
+
+### 返回体
+
+```
+{
+	all_department_info:[
+		{
+			deptID:int,
+			deptName:string
+		}......
+	]
+}
+```
+
+
+
+
+
+## 管理员获取所有用户的信息
+
+#### 位置 /admin/all_employee_info
+
+#### 权限：管理员
+
+#### 方法 GET
+
+### 请求参数：无
+
+### 返回体
+
+```
+{
+	all_employee_info:[
+		{
+			employeeID:string,
+			name:string,
+			password:string,
+			gender:string,
+			arrivalTime:string,
+			email:string,
+			phoneNumber:string,
+			role:string,
+			department:string
+		}......
+	]
+}
+```
+
