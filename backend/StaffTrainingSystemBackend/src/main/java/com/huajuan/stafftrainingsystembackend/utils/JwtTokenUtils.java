@@ -44,6 +44,12 @@ public class JwtTokenUtils {
         return getTokenBody(token).get(SecurityConstants.USERNAME_CONSTANT, String.class);
     }
 
+
+    public static String getUsernameByAuthorization(String authorization) {
+        String token = authorization.replace(SecurityConstants.TOKEN_PREFIX, "");
+        return getTokenBody(token).get(SecurityConstants.USERNAME_CONSTANT, String.class);
+    }
+
     /**
      * 获取用户所有角色
      */

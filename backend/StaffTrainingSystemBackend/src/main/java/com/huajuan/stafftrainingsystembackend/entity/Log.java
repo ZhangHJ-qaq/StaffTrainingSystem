@@ -1,14 +1,8 @@
 package com.huajuan.stafftrainingsystembackend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 @Entity
@@ -21,7 +15,8 @@ public class Log {
 
     @Id
     @Column(name = "log_id")
-    private Integer logID;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long logID;
 
     @Column(name = "content")
     private String content;

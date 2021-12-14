@@ -142,3 +142,38 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 }
 ```
 
+
+
+## 管理员增加/删除员工
+
+#### 位置 /admin/modify_employee
+
+#### 权限：管理员
+
+#### 方法 POST
+
+### 请求体
+
+```
+{
+	employeeID:string, ##如果这个employeeID在数据库中存在，就修改对应用户的信息，反之则增加一个新的用户
+	name:string,
+	password:string,
+	gender:string,
+	arrivalTime:string,
+	phoneNumber:string,
+	role:string,  ##admin或student或instructor或department_manager，四选一，在前端做一个下拉框
+	deptID:int ##在前端做一个部门的下拉框，选择部门并上传deptID
+}
+```
+
+### 返回体
+
+```
+{
+    "timestamp": string,
+    "status": int,
+    "message": string
+}
+```
+
