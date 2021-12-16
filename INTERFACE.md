@@ -85,6 +85,10 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 
 
 
+
+
+# 管理员部分
+
 ## 获得所有的部门信息
 
 #### 位置 /all/all_department_info
@@ -136,7 +140,8 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 			email:string,
 			phoneNumber:string,
 			role:string,
-			department:string
+			department:string,
+			deptID:int
 		}......
 	]
 }
@@ -164,6 +169,333 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 	phoneNumber:string,
 	role:string,  ##admin或student或instructor或department_manager，四选一，在前端做一个下拉框
 	deptID:int ##在前端做一个部门的下拉框，选择部门并上传deptID
+}
+```
+
+### 返回体
+
+```
+{
+    "timestamp": string,
+    "status": int,
+    "message": string
+}
+```
+
+
+
+## 管理员查询所有培训课程的信息
+
+#### 位置 /admin/all_course_info
+
+#### 权限：管理员
+
+#### 方法 GET
+
+### 请求参数：无
+
+### 返回体
+
+```
+{
+	all_course_info:[
+		{
+			courseID:string,
+			courseName:string,
+			courseContent:string,
+			courseType:string,
+			instructorID:string,
+			instructorName:string,
+			dept:[ #与这门课程相关联的部门
+				{
+					deptID:int,
+					deptName:string,
+					compulsory:boolean
+				}
+			]
+		}......
+	]
+}
+```
+
+
+
+## 管理员增加/修改课程
+
+#### 位置 /admin/modify_course
+
+#### 权限 管理员
+
+#### 方法 POST
+
+### 请求体
+
+```
+{
+	courseID:string,
+	courseName:string,
+	courseContent:string,
+	courseType:string,
+	instructorID:string,
+	instructorName:string,
+	dept: #与这门课程相关联的部门
+		{
+			deptID:int,
+			deptName:string,
+			compulsory:boolean
+		}
+}
+```
+
+
+
+## 管理员根据姓名或员工号查询用户的个人基本信息和培训成绩信息
+
+#### 位置 /admin/employee_info
+
+#### 权限 管理员
+
+#### 方法 GET
+
+### 请求参数
+
+```
+employeeID:string
+name:string
+
+##注：如果两者都有则后台只考虑employeeID
+```
+
+### 返回体
+
+```
+{
+	employeeID:string,
+	name:string,
+	gender:string,
+	arrivalTime:string,
+	email:string,
+	phoneNumber:string,
+	role:string,
+	department:string,
+	deptID,
+	scores:[
+		{
+			participateID:int,
+			courseID:string,
+			courseName:string,
+			startDate:string,
+			finished:boolean,
+			instructorName:string,
+			score:int
+		}
+	]
+}
+```
+
+
+
+## 管理员查看全部日志信息
+
+#### 位置 /admin/all_log
+
+#### 权限 管理员
+
+#### 方法 GET
+
+### 请求参数
+
+无
+
+### 返回体
+
+```
+[
+	{
+		logID:int,
+		content:string,
+		time:string,
+		operator:string
+	}
+]
+```
+
+
+
+# 员工（学员）部分
+
+## 员工（学员）查询自己的信息
+
+#### 位置 /student/my_info
+
+#### 权限 员工（学员）
+
+#### 方法 GET
+
+### 请求参数
+
+无
+
+### 返回体
+
+```
+{
+	employeeID:string,
+	name:string,
+	gender:string,
+	arrivalTime:string,
+	email:string,
+	phoneNumber:string,
+	role:string,
+	department:string,
+	deptID:int
+}
+```
+
+
+
+## 员工（学员）修改自己的信息
+
+#### 位置 /student/modify_my_info
+
+#### 权限 员工（学员）
+
+#### 方法 POST
+
+### 请求体
+
+```
+{
+	name:string,
+	gender:string,
+	email:string,
+	phoneNumber:string,
+}
+```
+
+### 返回体
+
+```
+{
+    "timestamp": string,
+    "status": int,
+    "message": string
+}
+```
+
+
+
+## 员工查询自己被分配到的课程及教员信息（此处是还在进行中的课程）
+
+#### 位置 /student/my_current_courses
+
+#### 权限 员工（学员）
+
+#### 方法 GET
+
+### 请求参数
+
+无
+
+### 返回体
+
+```
+{
+	[
+		participateID:int,
+		courseID:string,
+		courseName:string,
+		startDate:string,
+		finished:boolean, ##一定为false，可以不显示
+		instructorName:string,
+		score:int ##一定为null，可以不显示
+	]
+
+}
+```
+
+
+
+
+
+## 员工查询自己历史的课程和成绩
+
+#### 位置 /student/my_history_courses
+
+#### 权限 员工（学员）
+
+#### 方法 GET
+
+### 请求参数
+
+无
+
+### 返回体
+
+```
+{
+	participateID:int,
+	courseID:string,
+	courseName:string,
+	startDate:string,
+	finished:boolean, ##一定为true，可以不显示
+	instructorName:string,
+	score:int 
+}
+```
+
+
+
+# 教员部分
+
+## 教员查询自己教授的员工信息
+
+#### 位置 /instructor/my_students
+
+#### 权限 教员
+
+#### 方法 GET
+
+### 请求参数
+
+无
+
+### 返回体
+
+```
+[
+	{
+		courseID:int,
+		courseName:string,
+		[
+			{
+				participateID:int
+				studentID:string,
+				name:string,
+				isFinished:boolean,
+				score:int
+			}
+		]
+	}
+]
+```
+
+
+
+## 教员录入分数
+
+#### 位置 /instructor/register_score
+
+#### 权限 教员
+
+#### 方法 POST
+
+### 请求体
+
+```
+{
+	participateID:int,
+	score:int
 }
 ```
 
