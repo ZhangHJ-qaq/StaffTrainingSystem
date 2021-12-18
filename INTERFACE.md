@@ -116,7 +116,7 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 
 
 
-## 管理员获取所有用户的信息
+## 管理员获取所有用户的信息（已完成）
 
 #### 位置 /admin/all_employee_info
 
@@ -149,7 +149,7 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 
 
 
-## 管理员增加/删除员工
+## 管理员增加/删除员工（已完成）
 
 #### 位置 /admin/modify_employee
 
@@ -238,12 +238,14 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 	courseType:string,
 	instructorID:string,
 	instructorName:string,
-	dept: #与这门课程相关联的部门
+	dept:[
+	 #与这门课程相关联的部门
 		{
 			deptID:int,
 			deptName:string,
 			compulsory:boolean
 		}
+	]
 }
 ```
 

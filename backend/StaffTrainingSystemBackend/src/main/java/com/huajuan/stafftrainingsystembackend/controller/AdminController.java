@@ -1,9 +1,14 @@
 package com.huajuan.stafftrainingsystembackend.controller;
 
 import com.huajuan.stafftrainingsystembackend.contants.SecurityConstants;
+import com.huajuan.stafftrainingsystembackend.dto.CourseDTO;
 import com.huajuan.stafftrainingsystembackend.dto.EmployeeDTO;
+import com.huajuan.stafftrainingsystembackend.entity.Log;
 import com.huajuan.stafftrainingsystembackend.http.MyHttpResponseObj;
+import com.huajuan.stafftrainingsystembackend.repository.LogRepository;
+import com.huajuan.stafftrainingsystembackend.request.ModifyCourseRequest;
 import com.huajuan.stafftrainingsystembackend.request.ModifyEmployeeRequest;
+import com.huajuan.stafftrainingsystembackend.service.CourseService;
 import com.huajuan.stafftrainingsystembackend.service.EmployeeService;
 import com.huajuan.stafftrainingsystembackend.utils.JwtTokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +29,12 @@ public class AdminController {
 
     @Autowired
     private EmployeeService employeeService;
+
+    @Autowired
+    private CourseService courseService;
+
+    @Autowired
+    private LogRepository logRepository;
 
     /**
      * 获得所有员工的信息
@@ -58,5 +69,57 @@ public class AdminController {
         return ResponseEntity.ok(new MyHttpResponseObj(200, "操作成功"));
     }
 
+
+    /**
+     * 获得所有课程的信息
+     *
+     * @return 课程信息
+     */
+    @GetMapping("/admin/all_course_info")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<Map<String, Object>> allCourseInfo() {
+        List<CourseDTO> courseDTOList = courseService.allCourseInfo();
+        Map<String, Object> res = new HashMap<>();
+        res.put("all_course_info", courseDTOList);
+        return ResponseEntity.ok(res);
+    }
+
+
+    /**
+     * 修改课程
+     *
+     * @param httpReq             修改课程的请求
+     * @param modifyCourseRequest
+     * @param result
+     * @return
+     */
+    @PostMapping("/admin/modify_course")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<MyHttpResponseObj> modifyCourse(
+            HttpServletRequest httpReq,
+            @Valid @RequestBody ModifyCourseRequest modifyCourseRequest,
+            BindingResult result) {
+
+        //从http头中获得操作者
+        String operator = JwtTokenUtils.getUsernameByAuthorization(httpReq.getHeader(SecurityConstants.TOKEN_HEADER));
+
+        if (result.hasFieldErrors()) {
+            throw new RuntimeException(Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
+        }
+
+        courseService.modifyCourse(modifyCourseRequest, operator);
+
+        return ResponseEntity.ok(new MyHttpResponseObj(200, "操作成功"));
+    }
+
+
+    /**
+     * 管理员查看全部日志
+     */
+    @GetMapping("/admin/all_log")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<List<Log>> allLog() {
+        return ResponseEntity.ok(logRepository.findAll());
+    }
 
 }
