@@ -34,7 +34,7 @@
 
 
 
-## 用户登录
+## 用户登录(finished)
 
 #### 位置 /auth/login
 
@@ -89,7 +89,7 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 
 # 管理员部分
 
-## 获得所有的部门信息
+## 获得所有的部门信息(finished)
 
 #### 位置 /all/all_department_info
 
@@ -116,7 +116,7 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 
 
 
-## 管理员获取所有用户的信息（已完成）
+## 管理员获取所有用户的信息(finished)
 
 #### 位置 /admin/all_employee_info
 
@@ -149,7 +149,7 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 
 
 
-## 管理员增加/删除员工（已完成）
+## 管理员增加/删除员工(finished)
 
 #### 位置 /admin/modify_employee
 
@@ -184,7 +184,7 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 
 
 
-## 管理员查询所有培训课程的信息
+## 管理员查询所有培训课程的信息(finished)
 
 #### 位置 /admin/all_course_info
 
@@ -220,7 +220,7 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 
 
 
-## 管理员增加/修改课程
+## 管理员增加/修改课程(finished)
 
 #### 位置 /admin/modify_course
 
@@ -237,12 +237,12 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 	courseContent:string,
 	courseType:string,
 	instructorID:string,
-	instructorName:string,
+	instructorName:string, #后端无视这个属性
 	dept:[
 	 #与这门课程相关联的部门
 		{
 			deptID:int,
-			deptName:string,
+			deptName:string, #后端无视这个属性
 			compulsory:boolean
 		}
 	]
@@ -297,7 +297,7 @@ name:string
 
 
 
-## 管理员查看全部日志信息
+## 管理员查看全部日志信息(finished)
 
 #### 位置 /admin/all_log
 
