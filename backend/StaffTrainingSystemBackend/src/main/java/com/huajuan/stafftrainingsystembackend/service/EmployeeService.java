@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.executable.ValidateOnExecution;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class EmployeeService implements UserDetailsService {
@@ -36,6 +37,9 @@ public class EmployeeService implements UserDetailsService {
 
     @Autowired
     private LogRepository logRepository;
+
+    @Autowired
+    private ParticipateRepository participateRepository;
 
     @Override
     public UserDetails loadUserByUsername(String userID) throws UsernameNotFoundException {
@@ -70,6 +74,12 @@ public class EmployeeService implements UserDetailsService {
     public void modifyEmployee(ModifyEmployeeRequest req, String operator) {
         String role = req.getRole();
 
+        Employee originalEmployee = employeeRepository.findEmployeeByEmployeeID(req.getEmployeeID());
+        if (originalEmployee != null
+                && !Objects.equals(originalEmployee.getRole(), role)) {
+            throw new RuntimeException("不能修改用户的角色");
+        }
+
         Employee employee = new Employee(
                 req.getEmployeeID(),
                 req.getName(),
@@ -84,33 +94,23 @@ public class EmployeeService implements UserDetailsService {
 
         employeeRepository.save(employee);
 
-        //如果要切换角色，需要清除原来的角色信息
-        //如果本来就没有，会抛出异常，这里我们简单地将异常忽略掉即可
-        try {
-            if (studentRepository.existsById(req.getEmployeeID())) {
-                studentRepository.deleteById(req.getEmployeeID());
+        //如果是新增用户
+        if (originalEmployee == null) {
+            switch (role) {
+                case "student":
+                    studentRepository.save(new Student(req.getEmployeeID()));
+                    break;
+                case "instructor":
+                    instructorRepository.save(new Instructor(req.getEmployeeID()));
+                    break;
+                case "department_manager":
+                    deptManagerRepository.save(new DeptManager(req.getEmployeeID()));
+                    break;
+                case "admin":
+                    break;
+                default:
+                    throw new RuntimeException("角色错误！");
             }
-            if (deptManagerRepository.existsById(req.getEmployeeID())) {
-                deptManagerRepository.deleteById(req.getEmployeeID());
-            }
-            if (instructorRepository.existsById(req.getEmployeeID())) {
-                instructorRepository.deleteById(req.getEmployeeID());
-            }
-        } catch (Exception ignored) {
-        }
-
-        switch (role) {
-            case "student":
-                studentRepository.save(new Student(req.getEmployeeID()));
-                break;
-            case "instructor":
-                instructorRepository.save(new Instructor(req.getEmployeeID()));
-                break;
-            case "department_manager":
-                deptManagerRepository.save(new DeptManager(req.getEmployeeID()));
-                break;
-            default:
-                throw new RuntimeException("角色错误！");
         }
 
 
@@ -126,5 +126,39 @@ public class EmployeeService implements UserDetailsService {
         }
 
 
+    }
+
+    /**
+     * 根据员工的名字，查询员工的信息和成绩
+     *
+     * @param name 名字
+     * @return 员工的个人信息和成绩
+     */
+    public EmployeeDTO findEmployeeDTOWithScoreWithName(String name) {
+        EmployeeDTO employeeDTO = employeeRepository.findEmployeeDTOWithoutScoreWithName(name);
+
+        if (employeeDTO == null) {
+            throw new RuntimeException(String.format("找不到名为%s的员工", name));
+        }
+        //注入成绩
+        employeeDTO.setScores(participateRepository.findAllScoreDTOWithStudentID(employeeDTO.getEmployeeID()));
+        return employeeDTO;
+    }
+
+    /**
+     * 根据员工的编号，查询员工的信息和成绩
+     *
+     * @param employeeID 名字
+     * @return 员工的个人信息和成绩
+     */
+    public EmployeeDTO findEmployeeDTOWithScoreWithEmployeeID(String employeeID) {
+        EmployeeDTO employeeDTO = employeeRepository.findEmployeeDTOWithoutScoreWithEmployeeID(employeeID);
+
+        if (employeeDTO == null) {
+            throw new RuntimeException(String.format("找不到编号为%s的员工", employeeID));
+        }
+        //注入成绩
+        employeeDTO.setScores(participateRepository.findAllScoreDTOWithStudentID(employeeDTO.getEmployeeID()));
+        return employeeDTO;
     }
 }

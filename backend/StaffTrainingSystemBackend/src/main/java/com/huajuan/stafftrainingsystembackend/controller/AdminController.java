@@ -12,6 +12,7 @@ import com.huajuan.stafftrainingsystembackend.service.CourseService;
 import com.huajuan.stafftrainingsystembackend.service.EmployeeService;
 import com.huajuan.stafftrainingsystembackend.utils.JwtTokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -120,6 +121,20 @@ public class AdminController {
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<List<Log>> allLog() {
         return ResponseEntity.ok(logRepository.findAll());
+    }
+
+
+    @GetMapping("/admin/employee_info")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<EmployeeDTO> employeeInfo(@Param("employeeID") String employeeID, @Param("name") String name) {
+        EmployeeDTO employeeDTO;
+        if (employeeID != null) { //如果前端有传来员工ID，就按员工ID查询
+            employeeDTO = employeeService.findEmployeeDTOWithScoreWithEmployeeID(employeeID);
+        } else {
+            employeeDTO = employeeService.findEmployeeDTOWithScoreWithName(name);
+        }
+
+        return ResponseEntity.ok(employeeDTO);
     }
 
 }
