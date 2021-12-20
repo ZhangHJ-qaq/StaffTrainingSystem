@@ -76,7 +76,7 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 ```
 {
   "roles": "admin", #用户的角色
-  "username": "admin", #用户名
+  "employeeID": "admin", #员工编号
   "iss": "HuaJuan",
   "iat": 1639302210,
   "exp": 1639305810
@@ -251,7 +251,7 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 
 
 
-## 管理员根据姓名或员工号查询用户的个人基本信息和培训成绩信息
+## 管理员根据姓名或员工号查询用户的个人基本信息和培训成绩信息(finished)
 
 #### 位置 /admin/employee_info
 
@@ -326,7 +326,7 @@ name:string
 
 # 员工（学员）部分
 
-## 员工（学员）查询自己的信息
+## 员工（学员）查询自己的信息(finished)
 
 #### 位置 /student/my_info
 
@@ -402,7 +402,7 @@ name:string
 ### 返回体
 
 ```
-{
+
 	[
 		participateID:int,
 		courseID:string,
@@ -412,8 +412,6 @@ name:string
 		instructorName:string,
 		score:int ##一定为null，可以不显示
 	]
-
-}
 ```
 
 

@@ -11,7 +11,7 @@ public final class SecurityConstants {
      * 角色的key
      **/
     public static final String ROLE_CLAIMS = "roles";
-    public static final String USERNAME_CONSTANT = "username";
+    public static final String USERNAME_CONSTANT = "employeeID";
 
     /**
      * rememberMe 为 false 的时候过期时间是1个小时

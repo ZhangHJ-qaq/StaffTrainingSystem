@@ -11,7 +11,7 @@ import com.huajuan.stafftrainingsystembackend.repository.CourseRepository;
 import com.huajuan.stafftrainingsystembackend.repository.DeptCourseRepository;
 import com.huajuan.stafftrainingsystembackend.repository.LogRepository;
 import com.huajuan.stafftrainingsystembackend.repository.TeachRepository;
-import com.huajuan.stafftrainingsystembackend.request.ModifyCourseRequest;
+import com.huajuan.stafftrainingsystembackend.request.admin.ModifyCourseRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

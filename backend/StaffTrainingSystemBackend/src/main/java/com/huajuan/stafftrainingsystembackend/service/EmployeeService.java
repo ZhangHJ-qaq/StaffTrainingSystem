@@ -1,13 +1,14 @@
 package com.huajuan.stafftrainingsystembackend.service;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huajuan.stafftrainingsystembackend.dto.EmployeeDTO;
+import com.huajuan.stafftrainingsystembackend.dto.ScoreDTO;
 import com.huajuan.stafftrainingsystembackend.entity.*;
 import com.huajuan.stafftrainingsystembackend.repository.*;
-import com.huajuan.stafftrainingsystembackend.request.ModifyEmployeeRequest;
-import org.apache.log4j.spi.LoggerRepository;
+import com.huajuan.stafftrainingsystembackend.request.admin.ModifyEmployeeRequest;
+import com.huajuan.stafftrainingsystembackend.request.student.StudentModifySelfInfoRequest;
+import org.hibernate.validator.constraints.LuhnCheck;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,10 +16,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.executable.ValidateOnExecution;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService implements UserDetailsService {
@@ -160,5 +161,56 @@ public class EmployeeService implements UserDetailsService {
         //注入成绩
         employeeDTO.setScores(participateRepository.findAllScoreDTOWithStudentID(employeeDTO.getEmployeeID()));
         return employeeDTO;
+    }
+
+    /**
+     * 查询员工的个人信息，不带有成绩
+     *
+     * @param employeeID 员工编号
+     * @return EmployeeDTO
+     */
+    public EmployeeDTO findEmployeeByEmployeeIDWithoutScore(String employeeID) {
+        return employeeRepository.findEmployeeDTOWithoutScoreWithEmployeeID(employeeID);
+    }
+
+
+    public void modifyStudent(String employeeID, StudentModifySelfInfoRequest req) {
+        Employee student = employeeRepository.findById(employeeID).orElse(null);
+        if (student == null) {
+            throw new RuntimeException("找不到学员信息");
+        }
+        student.setName(req.getName());
+        student.setGender(req.getGender());
+        student.setEmail(req.getEmail());
+        student.setPhoneNumber(req.getPhoneNumber());
+        employeeRepository.save(student);
+    }
+
+    /**
+     * 根据员工ID，获得员工正在进行的课程信息
+     *
+     * @param employeeID 员工ID
+     * @return 员工正在进行的课程信息
+     */
+    public List<ScoreDTO> findCurrentCourses(String employeeID) {
+
+        //直接获取全部的在应用层过滤一下吧
+        List<ScoreDTO> allScoresDTO = participateRepository.findAllScoreDTOWithStudentID(employeeID);
+
+        return allScoresDTO.stream().filter(scoreDTO -> {
+            return !scoreDTO.getFinished();
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据员工ID，获取历史课程
+     * @param employeeID 员工ID
+     * @return 历史课程的信息和成绩
+     */
+    public List<ScoreDTO> findHistoryCourses(String employeeID) {
+        //直接获取全部的在应用层过滤一下吧
+        List<ScoreDTO> allScoresDTO = participateRepository.findAllScoreDTOWithStudentID(employeeID);
+
+        return allScoresDTO.stream().filter(ScoreDTO::getFinished).collect(Collectors.toList());
     }
 }

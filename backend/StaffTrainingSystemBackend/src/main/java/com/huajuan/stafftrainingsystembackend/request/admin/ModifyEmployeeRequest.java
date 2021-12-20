@@ -1,4 +1,4 @@
-package com.huajuan.stafftrainingsystembackend.request;
+package com.huajuan.stafftrainingsystembackend.request.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
