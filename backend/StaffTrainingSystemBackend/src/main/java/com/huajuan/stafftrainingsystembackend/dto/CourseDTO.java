@@ -9,6 +9,9 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * 用来在管理员查询所有的课程，显示的课程对象
+ */
 @Getter
 @Setter
 @NoArgsConstructor

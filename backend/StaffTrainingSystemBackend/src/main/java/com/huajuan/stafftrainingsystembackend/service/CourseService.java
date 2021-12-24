@@ -3,15 +3,12 @@ package com.huajuan.stafftrainingsystembackend.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huajuan.stafftrainingsystembackend.dto.CourseDTO;
-import com.huajuan.stafftrainingsystembackend.entity.Course;
-import com.huajuan.stafftrainingsystembackend.entity.DeptCourse;
-import com.huajuan.stafftrainingsystembackend.entity.Log;
-import com.huajuan.stafftrainingsystembackend.entity.Teach;
-import com.huajuan.stafftrainingsystembackend.repository.CourseRepository;
-import com.huajuan.stafftrainingsystembackend.repository.DeptCourseRepository;
-import com.huajuan.stafftrainingsystembackend.repository.LogRepository;
-import com.huajuan.stafftrainingsystembackend.repository.TeachRepository;
+import com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtCourseDTO;
+import com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtScoreDTO;
+import com.huajuan.stafftrainingsystembackend.entity.*;
+import com.huajuan.stafftrainingsystembackend.repository.*;
 import com.huajuan.stafftrainingsystembackend.request.admin.ModifyCourseRequest;
+import com.huajuan.stafftrainingsystembackend.request.instructor.RegisterScoreRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +29,13 @@ public class CourseService {
     private TeachRepository teachRepository;
 
     @Autowired
+    private InstructorRepository instructorRepository;
+
+    @Autowired
     private LogRepository logRepository;
+
+    @Autowired
+    private ParticipateRepository participateRepository;
 
 
     /**
@@ -73,6 +76,11 @@ public class CourseService {
 
         courseRepository.save(course);
 
+        Instructor instructor = instructorRepository.findById(req.getInstructorID()).orElse(null);
+        if (instructor == null) {
+            throw new RuntimeException(String.format("%s不是教员", req.getInstructorID()));
+        }
+
         //更新课程教授的信息
         Teach teach = new Teach(req.getCourseID(), req.getInstructorID());
         teachRepository.save(teach);
@@ -102,5 +110,56 @@ public class CourseService {
         }
 
     }
+
+
+    /**
+     * 根据instructorID，找到这个instructor教的所有课程的DTO，包括所有学生在这门课下面的成绩
+     *
+     * @param instructorID 教员ID
+     * @return 这个instructor教的所有课程的DTO，包括所有学生在这门课下面的成绩
+     */
+    public List<TaughtCourseDTO> allTaughtCourseDTO(String instructorID) {
+        List<TaughtCourseDTO> taughtCourseDTOList = participateRepository.findAllTaughtCourseWithInstructorID(instructorID);
+        taughtCourseDTOList.forEach(taughtCourseDTO -> {
+            taughtCourseDTO.setStudentScores(participateRepository.findAllTaughtScoreWithCourseIDAndInstructorID(
+                    taughtCourseDTO.getCourseID(), instructorID
+            ));
+        });
+        return taughtCourseDTOList;
+    }
+
+    /**
+     * 登记一个participateID的成绩
+     *
+     * @param registerScoreRequest 登记成绩请求
+     * @param operator             操作者
+     */
+    @Transactional
+    public void registerScore(RegisterScoreRequest registerScoreRequest, String operator) {
+        Participate participate = participateRepository.findById(registerScoreRequest.getParticipateID()).orElse(null);
+        if (participate == null) {
+            throw new RuntimeException("课程记录不存在");
+        }
+
+        if (participate.isFinished()) {
+            throw new RuntimeException("不能为已经结束的课程等级成绩");
+        }
+
+        //更新成绩
+        participate.setScore(registerScoreRequest.getScore());
+        participate.setFinished(true);
+
+        participateRepository.save(participate);
+
+        //写日志
+        logRepository.save(new Log(
+                null,
+                String.format("登记participateID:%d的成绩为%d", registerScoreRequest.getParticipateID(), registerScoreRequest.getScore()),
+                new Date(),
+                operator
+        ));
+
+    }
+
 
 }

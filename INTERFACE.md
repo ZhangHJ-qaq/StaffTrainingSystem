@@ -135,13 +135,24 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 			employeeID:string,
 			name:string,
 			password:string,
-			gender:string,
-			arrivalTime:string,
-			email:string,
+			gender:string, #男或女
+			arrivalTime:string, #yyyy-MM-dd
+			email:string, 
 			phoneNumber:string,
-			role:string,
+			role:string, #department_manager或admin或student或instructor
 			department:string,
-			deptID:int
+			deptID:int,
+			scores:[
+				{
+					participateID:int,
+					courseID:string,
+					courseName:string,
+					startDate:string, #yyyy-MM-dd
+					finished:boolean,
+					instructorName:string,
+					score:int
+				}
+			]
 		}......
 	]
 }
@@ -164,8 +175,8 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 	employeeID:string, ##如果这个employeeID在数据库中存在，就修改对应用户的信息，反之则增加一个新的用户
 	name:string,
 	password:string,
-	gender:string,
-	arrivalTime:string,
+	gender:string, ##男或女
+	arrivalTime:string, ##yyyy-MM-dd
 	phoneNumber:string,
 	role:string,  ##admin或student或instructor或department_manager，四选一，在前端做一个下拉框
 	deptID:int ##在前端做一个部门的下拉框，选择部门并上传deptID
@@ -200,7 +211,7 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 {
 	all_course_info:[
 		{
-			courseID:string,
+			courseID:string, 
 			courseName:string,
 			courseContent:string,
 			courseType:string,
@@ -356,7 +367,7 @@ name:string
 
 
 
-## 员工（学员）修改自己的信息
+## 员工（学员）修改自己的信息(finished)
 
 #### 位置 /student/modify_my_info
 
@@ -387,7 +398,7 @@ name:string
 
 
 
-## 员工查询自己被分配到的课程及教员信息（此处是还在进行中的课程）
+## 员工查询自己被分配到的课程及教员信息（此处是还在进行中的课程）(finished)
 
 #### 位置 /student/my_current_courses
 
@@ -418,7 +429,7 @@ name:string
 
 
 
-## 员工查询自己历史的课程和成绩
+## 员工查询自己历史的课程和成绩 (finished)
 
 #### 位置 /student/my_history_courses
 
@@ -448,7 +459,7 @@ name:string
 
 # 教员部分
 
-## 教员查询自己教授的员工信息
+## 教员查询自己教授的员工信息(finished)
 
 #### 位置 /instructor/my_students
 
@@ -467,12 +478,14 @@ name:string
 	{
 		courseID:int,
 		courseName:string,
+		studentScores:
 		[
 			{
 				participateID:int
 				studentID:string,
 				name:string,
-				isFinished:boolean,
+				startDate:string,
+				finished:boolean,
 				score:int
 			}
 		]
@@ -509,3 +522,283 @@ name:string
 }
 ```
 
+
+
+# 部门经理部分
+
+## 1.查看部门下的员工信息以及培训课程成绩
+
+#### 位置 /department_manager/all_dept_employee_info
+
+#### 权限 部门经理
+
+#### 方法 GET
+
+### 请求参数：无
+
+### 返回体
+
+```
+[
+		{
+			employeeID:string,
+			name:string,
+			password:string,
+			gender:string, #男或女
+			arrivalTime:string, #yyyy-MM-dd
+			email:string, 
+			phoneNumber:string,
+			role:string, #department_manager或admin或student或instructor
+			department:string,
+			deptID:int,
+			scores:[
+				{
+					participateID:int,
+					courseID:string,
+					courseName:string,
+					startDate:string, #yyyy-MM-dd
+					finished:boolean,
+					instructorName:string,
+					score:int
+				}
+			]
+		}......
+]
+
+```
+
+## 2.查看和本部门相关的所有课程
+
+### 位置 /department_manager/dept_course_info
+
+#### 权限：部门经理
+
+#### 方法：GET
+
+### 请求参数：无
+
+### 返回体：
+
+```
+[
+		{
+			courseID:string, 
+			courseName:string,
+			courseContent:string,
+			courseType:string,
+			instructorID:string,
+			instructorName:string,
+			dept:[ #与这门课程相关联的部门
+				{
+					deptID:int,
+					deptName:string,
+					compulsory:boolean
+				}
+			]
+		}......
+]
+```
+
+## 3.根据姓名或员工号为员工分配课程
+
+### 位置  /department_manager/allocate_course
+
+#### 权限：部门经理
+
+#### 方法：POST
+
+### 请求参数
+
+```
+{
+	employeeID:string,
+	name:string
+	
+	##优先考虑employeeID，如果有employeeID了，name就不考虑了
+}
+```
+
+### 返回体
+
+```
+{
+    "timestamp": string,
+    "status": int,
+    "message": string
+}
+```
+
+## 4.根据姓名或员工号查询员工的培训成绩
+
+#### 位置 /department_manager/dept_employee_info
+
+#### 权限 部门经理
+
+#### 方法 GET
+
+### 请求参数：
+
+employeeID: string,
+
+name: string
+
+**如果有employeeID就忽略name**
+
+### 返回体
+
+```
+
+		{
+			employeeID:string,
+			name:string,
+			password:string,
+			gender:string, #男或女
+			arrivalTime:string, #yyyy-MM-dd
+			email:string, 
+			phoneNumber:string,
+			role:string, #department_manager或admin或student或instructor
+			department:string,
+			deptID:int,
+			scores:[
+				{
+					participateID:int,
+					courseID:string,
+					courseName:string,
+					startDate:string, #yyyy-MM-dd
+					finished:boolean,
+					instructorName:string,
+					score:int
+				}
+			]
+		}......
+
+
+```
+
+## 5.根据姓名或员工号将员工转入其他部门
+
+### 位置  /department_manager/transfer_department
+
+#### 权限：部门经理
+
+#### 方法：POST
+
+### 请求参数
+
+```
+{
+	employeeID:string,
+	name:string,
+	newDeptID:int #新部门的编号
+	##优先考虑employeeID，如果有employeeID了，name就不考虑了
+}
+```
+
+### 返回体
+
+```
+{
+    "timestamp": string,
+    "status": int,
+    "message": string
+}
+```
+
+## 6.可以根据培训成绩的不同状态、课程类型定向查找（比如只查看培训通过的、或者 只查看某一课程的成绩等）
+
+在1的界面里，由前端进行过滤吧。。。。。。
+
+## 7.可以根据考试的通过次数定向查找（比如查看某课程未通过次数为三次以上的员工）
+
+在1的界面里，由前端进行过滤吧。。。。。。
+
+## 8.可以查询本部门下员工符合转部门的情况
+
+### 位置  /department_manager/check_all_transfer
+
+#### 权限：部门经理
+
+#### 方法：GET
+
+### 请求参数
+
+无
+
+### 返回体
+
+```
+[
+	{
+		employeeID:string,
+		name:string, #员工名
+		canTransfer:boolean, #是否满足转部门的条件
+		detail:string #如果符合转部门条件可以无视这个属性，如果不满足转部门条件这里会给出不能转部门的原因
+	}
+]
+```
+
+## 9.可以根据姓名或员工号以及员工的培训状态查看是否符合转部门要求
+
+### 位置  /department_manager/check_transfer
+
+#### 权限：部门经理
+
+#### 方法：GET
+
+### 请求参数
+
+employeeID: string,
+
+name: string
+
+**优先考虑employeeID**
+
+### 返回体
+
+```
+{
+		employeeID:string,
+		name:string, #员工名
+		canTransfer:boolean, #是否满足转部门的条件
+		detail:string #如果符合转部门条件可以无视这个属性，如果不满足转部门条件这里会给出不能转部门的原因
+}
+```
+
+## 10.根据姓名或员工号查询该员工转入新部门后需要培训的课程
+
+### 位置 /department_manager/courses_after_transfer
+
+#### 权限：部门经理
+
+#### 方法：GET
+
+### 请求体
+
+employeeID: string,
+
+name: string
+
+**优先考虑employeeID**
+
+### 返回体
+
+```
+[
+	{
+		courseID:string, 
+		courseName:string,
+		courseContent:string,
+		courseType:string,
+		instructorID:string,
+		instructorName:string,
+		dept:[ #与这门课程相关联的部门
+			{
+				deptID:int,
+				deptName:string,
+				compulsory:boolean
+			}
+		]
+	}
+]
+
+```

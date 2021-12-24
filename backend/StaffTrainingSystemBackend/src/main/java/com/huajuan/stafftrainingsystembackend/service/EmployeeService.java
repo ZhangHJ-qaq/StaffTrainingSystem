@@ -42,6 +42,9 @@ public class EmployeeService implements UserDetailsService {
     @Autowired
     private ParticipateRepository participateRepository;
 
+    @Autowired
+    private ManageRepository manageRepository;
+
     @Override
     public UserDetails loadUserByUsername(String userID) throws UsernameNotFoundException {
         //在数据库中查找Employee
@@ -62,7 +65,14 @@ public class EmployeeService implements UserDetailsService {
      * @return 所有员工的信息，放在List<EmployeeDTO>里
      */
     public List<EmployeeDTO> allEmployeeInfo() {
-        return employeeRepository.findAllEmployeeDTO();
+        List<EmployeeDTO> employeeDTOList = employeeRepository.findAllEmployeeDTO();
+        //注入成绩
+        employeeDTOList.forEach(employeeDTO -> {
+            employeeDTO.setScores(
+                    participateRepository.findAllScoreDTOWithStudentID(employeeDTO.getEmployeeID())
+            );
+        });
+        return employeeDTOList;
     }
 
 
@@ -92,6 +102,14 @@ public class EmployeeService implements UserDetailsService {
                 req.getRole(),
                 req.getDeptID()
         );
+
+        //限定一个部门的部门经理最多只能有一个
+        if ("department_manager".equals(role)) {
+            List<Manage> manage = manageRepository.findAllByDeptID(employee.getDeptID());
+            if (!manage.isEmpty()) { //如果部门已经有部门经理了
+                throw new RuntimeException(String.format("该部门已经存在经理%s", manage.get(0).getDeptManagerID()));
+            }
+        }
 
         employeeRepository.save(employee);
 
@@ -197,13 +215,12 @@ public class EmployeeService implements UserDetailsService {
         //直接获取全部的在应用层过滤一下吧
         List<ScoreDTO> allScoresDTO = participateRepository.findAllScoreDTOWithStudentID(employeeID);
 
-        return allScoresDTO.stream().filter(scoreDTO -> {
-            return !scoreDTO.getFinished();
-        }).collect(Collectors.toList());
+        return allScoresDTO.stream().filter(scoreDTO -> !scoreDTO.getFinished()).collect(Collectors.toList());
     }
 
     /**
      * 根据员工ID，获取历史课程
+     *
      * @param employeeID 员工ID
      * @return 历史课程的信息和成绩
      */
@@ -213,4 +230,9 @@ public class EmployeeService implements UserDetailsService {
 
         return allScoresDTO.stream().filter(ScoreDTO::getFinished).collect(Collectors.toList());
     }
+
+
+
+
+
 }
