@@ -1,6 +1,5 @@
 package com.huajuan.stafftrainingsystembackend.dto;
 
-import jdk.dynalink.linker.LinkerServices;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,11 +25,11 @@ public class EmployeeDTO {
     private String email;
     private String phoneNumber;
     private String role;
-    private String dept_name;
+    private String department;
     private Integer deptID;
     private List<ScoreDTO> scores;
 
-    public EmployeeDTO(String employeeID, String name, String password, String gender, Date arrivalTime, String email, String phoneNumber, String role, String dept_name, Integer deptID) {
+    public EmployeeDTO(String employeeID, String name, String password, String gender, Date arrivalTime, String email, String phoneNumber, String role, String department, Integer deptID) {
         this.employeeID = employeeID;
         this.name = name;
         this.password = password;
@@ -39,7 +38,7 @@ public class EmployeeDTO {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.role = role;
-        this.dept_name = dept_name;
+        this.department = department;
         this.deptID = deptID;
     }
 }

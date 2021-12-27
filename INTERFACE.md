@@ -599,7 +599,7 @@ name:string
 ]
 ```
 
-## 3.根据姓名或员工号为员工分配课程
+## 3.根据姓名或员工号为员工分配课程(finished)
 
 ### 位置  /department_manager/allocate_course
 
@@ -612,7 +612,8 @@ name:string
 ```
 {
 	employeeID:string,
-	name:string
+	name:string,
+	courseID:string ##之前漏掉了！
 	
 	##优先考虑employeeID，如果有employeeID了，name就不考虑了
 }
@@ -777,6 +778,8 @@ name: string
 employeeID: string,
 
 name: string
+
+newDeptID:int
 
 **优先考虑employeeID**
 

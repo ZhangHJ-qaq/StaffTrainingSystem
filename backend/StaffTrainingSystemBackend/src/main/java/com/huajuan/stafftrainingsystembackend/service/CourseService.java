@@ -3,19 +3,19 @@ package com.huajuan.stafftrainingsystembackend.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huajuan.stafftrainingsystembackend.dto.CourseDTO;
-import com.huajuan.stafftrainingsystembackend.dto.DeptCourseDTO;
+import com.huajuan.stafftrainingsystembackend.dto.EmployeeDTO;
 import com.huajuan.stafftrainingsystembackend.dto.ScoreDTO;
 import com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtCourseDTO;
-import com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtScoreDTO;
 import com.huajuan.stafftrainingsystembackend.entity.*;
 import com.huajuan.stafftrainingsystembackend.repository.*;
 import com.huajuan.stafftrainingsystembackend.request.admin.ModifyCourseRequest;
+import com.huajuan.stafftrainingsystembackend.request.departmentmanager.AllocateCourseRequest;
 import com.huajuan.stafftrainingsystembackend.request.instructor.RegisterScoreRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +42,16 @@ public class CourseService {
 
     @Autowired
     private ManageRepository manageRepository;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    @Lazy
+    private EmployeeService employeeService;
+
+    @Autowired
+    private StudentRepository studentRepository;
 
     /**
      * 获得所有课程的信息
@@ -240,6 +250,110 @@ public class CourseService {
             );
 
         });
+
+    }
+
+
+    /**
+     * 分配课程
+     *
+     * @param allocateCourseRequest 分配课程的请求
+     * @param deptManagerID         部门经理ID
+     */
+    @Transactional
+    public void allocateCourse(AllocateCourseRequest allocateCourseRequest, String deptManagerID) {
+
+        //先获得学生的ID
+        String employeeID = allocateCourseRequest.getEmployeeID();
+        String courseID = allocateCourseRequest.getCourseID();
+
+        //如果学生id是空的话，就先根据名字找学生id
+        if (employeeID == null) {
+            String name = allocateCourseRequest.getName();
+            employeeID = employeeService.findUniqueEmployeeIDByName(name);
+        }
+
+        if (!studentRepository.existsById(employeeID)) {//检查这个ID的主人是不是学生
+            throw new RuntimeException("你输入的可能不是学员，必须输入一个学员的ID才能为其分配课程！");
+        }
+
+        if (!employeeService.deptManagerAndEmployeeInSameDepartment(deptManagerID, employeeID)) {
+            throw new RuntimeException("你不能为一个不属于自己部门的员工分配课程");
+        }
+
+        //尝试插入Participate对象
+        Participate participate = new Participate(
+                null,
+                new Date(),
+                false,
+                null,
+                teachRepository.getById(courseID).getInstructorID(),
+                employeeID,
+                courseID
+        );
+
+        //保存
+        participateRepository.save(participate);
+
+        //写日志
+        logRepository.save(
+                new Log(
+                        null,
+                        String.format("为学员%s分配课程%s", employeeID, courseID),
+                        new Date(),
+                        deptManagerID
+                )
+        );
+
+    }
+
+    /**
+     * 部门经理查询自己部门下的员工，如果转到一个新的部门，转完后需要额外修哪些课
+     *
+     * @param deptManagerID 部门经理编号
+     * @param employeeID    员工编号
+     * @param newDeptID     新部门编号
+     * @return 转完以后需要额外修哪些课
+     */
+    public List<CourseDTO> getCoursesAfterTransfer(String deptManagerID, String employeeID, Integer newDeptID) {
+        Manage manage = manageRepository.findByDeptManagerID(deptManagerID);
+        if (manage == null) {
+            throw new RuntimeException("未找到你所管理的部门，请联系系统管理员");
+        }
+
+        EmployeeDTO employeeDTO = employeeRepository.findEmployeeDTOWithoutScoreWithEmployeeID(employeeID);
+
+        if (employeeDTO == null) {
+            throw new RuntimeException("找不到员工");
+        }
+
+        if (!"student".equals(employeeDTO.getRole())) {
+            throw new RuntimeException("只有学员才可以转部门");
+        }
+
+        if (manage.getDeptID() != employeeDTO.getDeptID()) {
+            throw new RuntimeException("你不能查询一个不属于自己部门的员工的信息");
+        }
+
+        //找到所有新部门的必修课
+        List<CourseDTO> compulsoryCoursesOfNewDepartment = courseRepository.findAllCompulsoryCourseDTOWithDeptID(newDeptID);
+
+        //所有他已经通过的课程的课程ID
+        Set<String> passedCourseID =
+                participateRepository.findAllPassedScoreDTOWithStudentID(employeeID)
+                        .stream().map(ScoreDTO::getCourseID).collect(Collectors.toSet());
+
+        List<CourseDTO> coursesNeedToLearnAfterTransfer = new ArrayList<>();
+
+        //遍历新部门的所有必修课，如果他还没有通过这门课，则这门课就是他转部门以后要学的课
+        compulsoryCoursesOfNewDepartment.forEach(courseDTO -> {
+            if (!passedCourseID.contains(courseDTO.getCourseID())) {
+                courseDTO.setDept(deptCourseRepository.findDeptCourseDTOWithCourseID(courseDTO.getCourseID()));
+                coursesNeedToLearnAfterTransfer.add(courseDTO);
+            }
+        });
+
+        return coursesNeedToLearnAfterTransfer;
 
     }
 

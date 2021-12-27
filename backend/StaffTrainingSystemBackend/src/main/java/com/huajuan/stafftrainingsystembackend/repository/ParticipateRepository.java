@@ -1,5 +1,6 @@
 package com.huajuan.stafftrainingsystembackend.repository;
 
+import com.huajuan.stafftrainingsystembackend.dto.CourseDTO;
 import com.huajuan.stafftrainingsystembackend.dto.ScoreDTO;
 import com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtCourseDTO;
 import com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtScoreDTO;
@@ -47,4 +48,23 @@ public interface ParticipateRepository extends JpaRepository<Participate, Long> 
      */
     @Query("select new com.huajuan.stafftrainingsystembackend.dto.ScoreDTO(p.participateID,p.courseID,c.courseName,p.startDate,p.finished,ins.name,p.score) from Participate p left join Course c on p.courseID=c.courseID left join Employee ins on ins.employeeID=p.instructorID where p.studentID=:studentID and (p.finished=false or p.score>=60)")
     public List<ScoreDTO> findAllPendingOrPassedScoreDTOWithStudentID(@Param("studentID") String studentID);
+
+    /**
+     * 根据学生的编号，找到他所有已经通过的课程的成绩信息
+     *
+     * @param studentID 学生编号
+     * @return 他所有正在进行的课程，或者已经通过的课程的成绩信息
+     */
+    @Query("select new com.huajuan.stafftrainingsystembackend.dto.ScoreDTO(p.participateID,p.courseID,c.courseName,p.startDate,p.finished,ins.name,p.score) from Participate p left join Course c on p.courseID=c.courseID left join Employee ins on ins.employeeID=p.instructorID where p.studentID=:studentID and p.score>=60")
+    public List<ScoreDTO> findAllPassedScoreDTOWithStudentID(@Param("studentID") String studentID);
+
+
+    /**
+     * 根据学生的编号，找到学生所有没有完成的，或是挂掉的participate记录
+     *
+     * @param studentID 学生编号
+     * @return 学生所有没有完成的，或是挂掉的participate记录
+     */
+    @Query("select new com.huajuan.stafftrainingsystembackend.dto.ScoreDTO(p.participateID,p.courseID,c.courseName,p.startDate,p.finished,ins.name,p.score) from Participate p left join Course c on p.courseID=c.courseID left join Employee ins on ins.employeeID=p.instructorID where p.studentID=:studentID and (p.finished=false or p.score<60)")
+    public List<ScoreDTO> findAllPendingOrFailedScoreDTOWithStudentID(@Param("studentID") String studentID);
 }

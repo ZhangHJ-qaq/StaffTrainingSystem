@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, String> {
 
-    public Employee findEmployeeByName(String name);
+    public List<Employee> findEmployeeByName(String name);
 
     public Employee findEmployeeByEmployeeID(String employeeID);
 
@@ -26,7 +26,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, String> {
 
     @Query(value = "select new com.huajuan.stafftrainingsystembackend.dto.EmployeeDTO(e.employeeID, e.name, e.password, e.gender, e.arrivalTime, e.email, e.phoneNumber, e.role, d.deptName,e.deptID)" +
             " from Employee e left join Department d on d.deptID = e.deptID where e.name=:name")
-    public EmployeeDTO findEmployeeDTOWithoutScoreWithName(@Param("name") String name);
+    public List<EmployeeDTO> findAllEmployeeDTOWithoutScoreWithName(@Param("name") String name);
 
     @Query(value = "select new com.huajuan.stafftrainingsystembackend.dto.EmployeeDTO(e.employeeID, e.name, e.password, e.gender, e.arrivalTime, e.email, e.phoneNumber, e.role, d.deptName,e.deptID)" +
             " from Employee e left join Department d on d.deptID = e.deptID where e.employeeID=:employeeID")
