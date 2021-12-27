@@ -45,6 +45,9 @@ public class EmployeeService implements UserDetailsService {
     @Autowired
     private ManageRepository manageRepository;
 
+    @Autowired
+    private CourseService courseService;
+
     @Override
     public UserDetails loadUserByUsername(String userID) throws UsernameNotFoundException {
         //在数据库中查找Employee
@@ -103,13 +106,6 @@ public class EmployeeService implements UserDetailsService {
                 req.getDeptID()
         );
 
-        //限定一个部门的部门经理最多只能有一个
-        if ("department_manager".equals(role)) {
-            List<Manage> manage = manageRepository.findAllByDeptID(employee.getDeptID());
-            if (!manage.isEmpty()) { //如果部门已经有部门经理了
-                throw new RuntimeException(String.format("该部门已经存在经理%s", manage.get(0).getDeptManagerID()));
-            }
-        }
 
         employeeRepository.save(employee);
 
@@ -118,6 +114,13 @@ public class EmployeeService implements UserDetailsService {
             switch (role) {
                 case "student":
                     studentRepository.save(new Student(req.getEmployeeID()));
+                    //如果是学员，就为他分配部门的课程信息
+                    courseService.allocateCompulsoryCourses(
+                            req.getEmployeeID(),
+                            req.getDeptID(),
+                            operator
+                    );
+
                     break;
                 case "instructor":
                     instructorRepository.save(new Instructor(req.getEmployeeID()));
@@ -130,6 +133,19 @@ public class EmployeeService implements UserDetailsService {
                 default:
                     throw new RuntimeException("角色错误！");
             }
+        }
+
+        if ("department_manager".equals(role)) {
+
+            //限定一个部门的部门经理最多只能有一个
+            List<Manage> manageList = manageRepository.findAllByDeptID(employee.getDeptID());
+            if (!manageList.isEmpty()) { //如果部门已经有部门经理了
+                throw new RuntimeException(String.format("该部门已经存在经理%s", manageList.get(0).getDeptManagerID()));
+            }
+
+            //在manage表中更改部门经理有关的信息
+            Manage manage = new Manage(employee.getDeptID(), employee.getEmployeeID());
+            manageRepository.save(manage);
         }
 
 
@@ -232,7 +248,27 @@ public class EmployeeService implements UserDetailsService {
     }
 
 
+    /**
+     * 根据一个部门经理的deptManagerID，找到他部门底下所有的员工的信息
+     *
+     * @param deptManagerID 部门经理ID
+     * @return 部门经理所管理的部门下面所有员工的信息
+     */
+    public List<EmployeeDTO> allEmployeeInfoInMyDepartment(String deptManagerID) {
 
+        //先根据deptManagerID找到所管理的部门
+        Manage manage = manageRepository.findByDeptManagerID(deptManagerID);
+        if (manage == null) {
+            throw new RuntimeException("未找到你所管理的部门，请联系系统管理员");
+        }
+
+        List<EmployeeDTO> res = employeeRepository.findAllEmployeeDTOWithDeptID(manage.getDeptID());
+
+        //注入成绩
+        res.forEach(employeeDTO -> employeeDTO.setScores(participateRepository.findAllScoreDTOWithStudentID(employeeDTO.getEmployeeID())));
+
+        return res;
+    }
 
 
 }

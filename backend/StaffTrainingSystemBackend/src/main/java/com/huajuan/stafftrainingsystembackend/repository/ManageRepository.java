@@ -9,4 +9,6 @@ import java.util.List;
 public interface ManageRepository extends JpaRepository<Manage, Integer> {
 
     public List<Manage> findAllByDeptID(Integer deptID);
+
+    public Manage findByDeptManagerID(String deptManagerID);
 }

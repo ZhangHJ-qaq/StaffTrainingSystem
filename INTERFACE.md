@@ -526,7 +526,7 @@ name:string
 
 # 部门经理部分
 
-## 1.查看部门下的员工信息以及培训课程成绩
+## 1.查看部门下的员工信息以及培训课程成绩(finished)
 
 #### 位置 /department_manager/all_dept_employee_info
 
@@ -567,7 +567,7 @@ name:string
 
 ```
 
-## 2.查看和本部门相关的所有课程
+## 2.查看和本部门相关的所有课程(finished)
 
 ### 位置 /department_manager/dept_course_info
 

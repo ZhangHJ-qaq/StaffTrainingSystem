@@ -3,6 +3,8 @@ package com.huajuan.stafftrainingsystembackend.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huajuan.stafftrainingsystembackend.dto.CourseDTO;
+import com.huajuan.stafftrainingsystembackend.dto.DeptCourseDTO;
+import com.huajuan.stafftrainingsystembackend.dto.ScoreDTO;
 import com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtCourseDTO;
 import com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtScoreDTO;
 import com.huajuan.stafftrainingsystembackend.entity.*;
@@ -13,8 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
+import javax.persistence.criteria.CriteriaBuilder;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseService {
@@ -37,6 +40,8 @@ public class CourseService {
     @Autowired
     private ParticipateRepository participateRepository;
 
+    @Autowired
+    private ManageRepository manageRepository;
 
     /**
      * 获得所有课程的信息
@@ -49,13 +54,35 @@ public class CourseService {
         List<CourseDTO> courseDTOList = courseRepository.findAllCourseDTO();
 
         //给每个courseDTO注入部门的信息
-        courseDTOList.forEach(courseDTO -> {
-            courseDTO.setDept(
-                    deptCourseRepository.findDeptCourseDTOWithCourseID(courseDTO.getCourseID())
-            );
-        });
+        courseDTOList.forEach(courseDTO -> courseDTO.setDept(
+                deptCourseRepository.findDeptCourseDTOWithCourseID(courseDTO.getCourseID())
+        ));
 
         return courseDTOList;
+    }
+
+    /**
+     * 部门经理根据自己的deptManagerID，获得自己部门下所有课程的信息
+     *
+     * @param deptManagerID 部门经理ID
+     * @return 自己部门下所有课程的信息
+     */
+    public List<CourseDTO> allCourseInfoInMyDepartment(String deptManagerID) {
+
+        //找出管理的部门
+        Manage manage = manageRepository.findByDeptManagerID(deptManagerID);
+        if (manage == null) {
+            throw new RuntimeException("未找到你所管理的部门，请联系系统管理员");
+        }
+
+
+        //获得部门下的所有课程
+        List<CourseDTO> res = courseRepository.findAllCourseDTOWithDeptID(manage.getDeptID());
+
+        //注入部门信息
+        res.forEach(courseDTO -> courseDTO.setDept(deptCourseRepository.findDeptCourseDTOWithCourseID(courseDTO.getCourseID())));
+
+        return res;
     }
 
     /**
@@ -158,6 +185,61 @@ public class CourseService {
                 new Date(),
                 operator
         ));
+
+    }
+
+
+    /**
+     * 根据studentID和deptID，为这个学生分配
+     *
+     * @param studentID
+     * @param deptID
+     */
+    @Transactional
+    public void allocateCompulsoryCourses(String studentID, Integer deptID, String operator) {
+
+        //要为这个学员分配的课程的编号。先查出这个部门所有的必修课程
+        Set<String> allDeptCompulsoryCourseIDNeedToAllocate = new HashSet<>();
+
+        //获得这个部门所有必修的课程
+        List<CourseDTO> allDeptCompulsoryCourseDTO = courseRepository.findAllCompulsoryCourseDTOWithDeptID(deptID);
+        allDeptCompulsoryCourseDTO.forEach(courseDTO -> {
+            allDeptCompulsoryCourseIDNeedToAllocate.add(courseDTO.getCourseID());
+        });
+
+        //获得这个学员正在进行的，或者结束了且已经通过的课程
+        List<ScoreDTO> pendingOrPassedScoreDTO = participateRepository.findAllPendingOrPassedScoreDTOWithStudentID(studentID);
+
+        //把已经通过的课程，或者正在进行的课程从所有的必修课程里减掉，就是要给学生分配的课程
+        pendingOrPassedScoreDTO.forEach(scoreDTO -> allDeptCompulsoryCourseIDNeedToAllocate.remove(scoreDTO.getCourseID()));
+
+        //分配
+        allDeptCompulsoryCourseIDNeedToAllocate.forEach(courseID -> {
+            //添加学生在这门课程中的参与
+            Participate participate = new Participate(
+                    null,
+                    new Date(),
+                    false,
+                    null,
+                    teachRepository.getById(courseID).getInstructorID(),
+                    studentID,
+                    courseID
+            );
+
+            //记录参与信息
+            participateRepository.save(participate);
+
+            //记录日志
+            logRepository.save(
+                    new Log(
+                            null,
+                            String.format("为学员%s分配课程%s", studentID, courseID),
+                            new Date(),
+                            operator
+                    )
+            );
+
+        });
 
     }
 
