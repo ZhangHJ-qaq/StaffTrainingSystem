@@ -11,11 +11,11 @@
         </el-menu-item>
         <el-menu-item index="/student/viewCourseInfos">
           <i class="el-icon-document"></i>
-          <span slot="title">课程信息</span>
+          <span slot="title">当前课程</span>
         </el-menu-item>
         <el-menu-item index="/student/viewScores">
           <i class="el-icon-document-checked"></i>
-          <span slot="title">培训信息</span>
+          <span slot="title">历史培训</span>
         </el-menu-item>
       </el-menu>
     </el-col>

@@ -76,8 +76,31 @@ export default {
   name: "EditUserInfos",
   data () {
     return {
-      size: ''
-    };
+      userInfos: [
+        // {
+        // employeeID:string,
+        // name:string,
+        // gender:string,
+        // arrivalTime:string,
+        // email:string,
+        // phoneNumber:string,
+        // role:string,
+        // department:string,
+        // deptID:int
+        // }
+      ]
+    }
+  },
+  created() {//初始化操作
+    this.axios.get('/student/my_info').then(resp => {
+      if (resp.status === 200) {
+        this.userInfos.push(resp.data);
+      } else {
+        this.$message.error(resp.data.message);
+      }
+    }).catch(err => {
+      this.$message.error(err.response.data.message)
+    })
   }
 }
 </script>

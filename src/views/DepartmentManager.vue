@@ -1,5 +1,26 @@
 <template>
-  <div>kkk</div>
+  <div>
+    <el-row>
+      <el-col class="menu">
+        <el-menu
+            :default-active="$route.path"
+            :router="true"
+            class="el-menu-vertical-demo">
+          <el-menu-item index="/instructor/recordScores">
+            <i class="el-icon-menu"></i>
+            <span slot="title">成绩录入</span>
+          </el-menu-item>
+          <el-menu-item index="/instructor/viewStudentInfos">
+            <i class="el-icon-document"></i>
+            <span slot="title">学员信息</span>
+          </el-menu-item>
+        </el-menu>
+      </el-col>
+      <el-col class="content">
+        <router-view/>
+      </el-col>
+    </el-row>
+  </div>
 </template>
 
 <script>
@@ -9,5 +30,19 @@ export default {
 </script>
 
 <style scoped>
-
+.menu {
+  width: 12%;
+  float: left;
+}
+.content {
+  float: right;
+  width: 85%;
+}
+.router-link-active {
+  color: deepskyblue;
+}
+.admin-link {
+  text-decoration: none;
+  color: inherit;
+}
 </style>
