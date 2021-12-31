@@ -168,7 +168,7 @@ public class EmployeeService implements UserDetailsService {
 
             //限定一个部门的部门经理最多只能有一个
             List<Manage> manageList = manageRepository.findAllByDeptID(employee.getDeptID());
-            if (!manageList.isEmpty()) { //如果部门已经有部门经理了
+            if (!manageList.isEmpty() && !Objects.equals(manageList.get(0).getDeptManagerID(), employee.getEmployeeID())) { //如果部门已经有部门经理了
                 throw new RuntimeException(String.format("该部门已经存在经理%s", manageList.get(0).getDeptManagerID()));
             }
 

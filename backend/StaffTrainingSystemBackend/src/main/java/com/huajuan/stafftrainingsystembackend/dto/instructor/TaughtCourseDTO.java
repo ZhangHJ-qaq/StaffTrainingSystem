@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 用来显示给教员的，他教授的课程的DTO
@@ -24,5 +25,18 @@ public class TaughtCourseDTO {
     public TaughtCourseDTO(String courseName, String courseID) {
         this.courseName = courseName;
         this.courseID = courseID;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TaughtCourseDTO that = (TaughtCourseDTO) o;
+        return courseName.equals(that.courseName) && courseID.equals(that.courseID);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(courseName, courseID);
     }
 }

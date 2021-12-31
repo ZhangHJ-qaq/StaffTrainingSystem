@@ -23,7 +23,7 @@ public interface ParticipateRepository extends JpaRepository<Participate, Long> 
      * @param instructorID 教员ID
      * @return 这个教员上过的所有课程
      */
-    @Query("select new com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtCourseDTO(c.courseName,p.courseID) from Participate p left join Course c on p.courseID=c.courseID where p.instructorID=:instructorID")
+    @Query("select distinct new com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtCourseDTO(c.courseName,p.courseID) from Participate p left join Course c on p.courseID=c.courseID where p.instructorID=:instructorID")
     public List<TaughtCourseDTO> findAllTaughtCourseWithInstructorID(@Param("instructorID") String instructorID);
 
     /**

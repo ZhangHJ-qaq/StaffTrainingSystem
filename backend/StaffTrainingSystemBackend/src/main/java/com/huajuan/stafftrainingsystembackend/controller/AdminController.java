@@ -131,7 +131,7 @@ public class AdminController {
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<EmployeeDTO> employeeInfo(@Param("employeeID") String employeeID, @Param("name") String name) {
         EmployeeDTO employeeDTO;
-        if (employeeID != null) { //如果前端有传来员工ID，就按员工ID查询
+        if (employeeID != null && !employeeID.isEmpty()) { //如果前端有传来员工ID，就按员工ID查询
             employeeDTO = employeeService.findEmployeeDTOWithScoreWithEmployeeID(employeeID);
         } else {
             employeeDTO = employeeService.findEmployeeDTOWithScoreWithName(name);

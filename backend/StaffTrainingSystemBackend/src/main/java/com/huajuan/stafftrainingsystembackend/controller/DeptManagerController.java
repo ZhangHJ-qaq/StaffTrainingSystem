@@ -109,7 +109,7 @@ public class DeptManagerController {
         String deptManagerID = JwtTokenUtils.getUsernameByAuthorization(httpReq.getHeader(SecurityConstants.TOKEN_HEADER));
 
         EmployeeDTO employeeDTO = null;
-        if (employeeID != null) {
+        if (employeeID != null && !employeeID.isEmpty()) {
             employeeDTO = employeeService.findEmployeeDTOWithScoreWithEmployeeID(employeeID);
         } else if (name != null) {
             employeeDTO = employeeService.findEmployeeDTOWithScoreWithName(name);
@@ -161,7 +161,7 @@ public class DeptManagerController {
         String deptManagerID = JwtTokenUtils.getUsernameByAuthorization(httpReq.getHeader(SecurityConstants.TOKEN_HEADER));
 
         //如果没有传入employeeID而传入的是name，就根据name查找employeeID
-        if (employeeID == null) {
+        if (employeeID == null || employeeID.isEmpty()) {
             employeeID = employeeService.findUniqueEmployeeIDByName(name);
         }
 
@@ -191,7 +191,7 @@ public class DeptManagerController {
         String deptManagerID = JwtTokenUtils.getUsernameByAuthorization(httpReq.getHeader(SecurityConstants.TOKEN_HEADER));
 
         //如果没有传入employeeID而传入的是name，就根据name查找employeeID
-        if (employeeID == null) {
+        if (employeeID == null || employeeID.isEmpty()) {
             employeeID = employeeService.findUniqueEmployeeIDByName(name);
         }
 
