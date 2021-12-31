@@ -8,6 +8,7 @@ import com.huajuan.stafftrainingsystembackend.dto.ScoreDTO;
 import com.huajuan.stafftrainingsystembackend.dto.departmentmanager.TransferQualificationDTO;
 import com.huajuan.stafftrainingsystembackend.entity.*;
 import com.huajuan.stafftrainingsystembackend.repository.*;
+import com.huajuan.stafftrainingsystembackend.request.admin.DeleteEmployeeRequest;
 import com.huajuan.stafftrainingsystembackend.request.admin.ModifyEmployeeRequest;
 import com.huajuan.stafftrainingsystembackend.request.departmentmanager.TransferDepartmentRequest;
 import com.huajuan.stafftrainingsystembackend.request.student.StudentModifySelfInfoRequest;
@@ -65,6 +66,30 @@ public class EmployeeService implements UserDetailsService {
         return employee;
     }
 
+
+    /**
+     * 根据员工ID删除员工
+     */
+    @Transactional
+    public void deleteEmployee(DeleteEmployeeRequest deleteEmployeeRequest, String operator) {
+        Employee employee = employeeRepository.findById(deleteEmployeeRequest.getEmployeeID()).orElse(null);
+        if (employee != null && "admin".equals(employee.getRole())) {
+            throw new RuntimeException("不能删除管理员");
+        }
+
+        try {
+            employeeRepository.deleteById(deleteEmployeeRequest.getEmployeeID());
+        } catch (Exception e) {
+            throw new RuntimeException("无法删除此员工");
+        }
+
+        logRepository.save(new Log(
+                null,
+                String.format("删除员工%s", operator),
+                new Date(),
+                operator
+        ));
+    }
 
     /**
      * 获得所有员工的信息

@@ -6,6 +6,8 @@ import com.huajuan.stafftrainingsystembackend.dto.EmployeeDTO;
 import com.huajuan.stafftrainingsystembackend.entity.Log;
 import com.huajuan.stafftrainingsystembackend.http.MyHttpResponseObj;
 import com.huajuan.stafftrainingsystembackend.repository.LogRepository;
+import com.huajuan.stafftrainingsystembackend.request.admin.DeleteCourseRequest;
+import com.huajuan.stafftrainingsystembackend.request.admin.DeleteEmployeeRequest;
 import com.huajuan.stafftrainingsystembackend.request.admin.ModifyCourseRequest;
 import com.huajuan.stafftrainingsystembackend.request.admin.ModifyEmployeeRequest;
 import com.huajuan.stafftrainingsystembackend.service.CourseService;
@@ -19,6 +21,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
@@ -135,6 +138,47 @@ public class AdminController {
         }
 
         return ResponseEntity.ok(employeeDTO);
+    }
+
+    @PostMapping("/admin/delete_employee")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<MyHttpResponseObj> deleteEmployee(HttpServletRequest httpReq,
+                                                            @Valid @RequestBody DeleteEmployeeRequest deleteEmployeeRequest,
+                                                            BindingResult result) {
+
+        String operator = JwtTokenUtils.getUsernameByAuthorization(httpReq.getHeader(SecurityConstants.TOKEN_HEADER));
+
+        if (result.hasFieldErrors()) {
+            throw new RuntimeException(Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
+        }
+
+        employeeService.deleteEmployee(deleteEmployeeRequest, operator);
+
+        return ResponseEntity.ok(new MyHttpResponseObj(
+                HttpServletResponse.SC_OK, "删除成功"
+        ));
+
+
+    }
+
+    @PostMapping("/admin/delete_course")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<MyHttpResponseObj> deleteCourse(
+            HttpServletRequest httpReq,
+            @Valid @RequestBody DeleteCourseRequest deleteCourseRequest,
+            BindingResult result) {
+
+        String operator = JwtTokenUtils.getUsernameByAuthorization(httpReq.getHeader(SecurityConstants.TOKEN_HEADER));
+
+        if (result.hasFieldErrors()) {
+            throw new RuntimeException(Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
+        }
+
+        courseService.deleteCourse(deleteCourseRequest, operator);
+
+        return ResponseEntity.ok(new MyHttpResponseObj(
+                HttpServletResponse.SC_OK, "删除成功"
+        ));
     }
 
 }

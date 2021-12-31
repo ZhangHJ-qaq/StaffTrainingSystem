@@ -8,6 +8,7 @@ import com.huajuan.stafftrainingsystembackend.dto.ScoreDTO;
 import com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtCourseDTO;
 import com.huajuan.stafftrainingsystembackend.entity.*;
 import com.huajuan.stafftrainingsystembackend.repository.*;
+import com.huajuan.stafftrainingsystembackend.request.admin.DeleteCourseRequest;
 import com.huajuan.stafftrainingsystembackend.request.admin.ModifyCourseRequest;
 import com.huajuan.stafftrainingsystembackend.request.departmentmanager.AllocateCourseRequest;
 import com.huajuan.stafftrainingsystembackend.request.instructor.RegisterScoreRequest;
@@ -357,5 +358,22 @@ public class CourseService {
 
     }
 
+
+    public void deleteCourse(DeleteCourseRequest deleteCourseRequest, String operator) {
+
+        try {
+            courseRepository.deleteById(deleteCourseRequest.getCourseID());
+
+        } catch (Exception e) {
+            throw new RuntimeException("无法删除此课程");
+        }
+
+        logRepository.save(new Log(
+                null,
+                String.format("删除课程%s", operator),
+                new Date(),
+                operator
+        ));
+    }
 
 }

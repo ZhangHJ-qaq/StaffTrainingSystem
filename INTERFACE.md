@@ -160,7 +160,7 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
 
 
 
-## 管理员增加/删除员工(finished)
+## 管理员增加/修改员工(finished)
 
 #### 位置 /admin/modify_employee
 
@@ -192,6 +192,64 @@ Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlcyI6ImFkbWluIiwidXNlcm5hbWUi
     "message": string
 }
 ```
+
+
+
+## 管理员删除员工
+
+#### 位置 /admin/delete_employee
+
+#### 权限：管理员
+
+#### 方法 POST
+
+### 请求体
+
+```
+{
+	employeeID:string
+}
+```
+
+### 返回体
+
+```
+{
+    "timestamp": string,
+    "status": int,
+    "message": string
+}
+```
+
+
+
+## 管理员删除课程
+
+#### 位置 /admin/delete_course
+
+#### 权限：管理员
+
+#### 方法 POST
+
+### 请求体
+
+```
+{
+	courseID:string
+}
+```
+
+### 返回体
+
+```
+{
+    "timestamp": string,
+    "status": int,
+    "message": string
+}
+```
+
+
 
 
 
@@ -461,7 +519,7 @@ name:string
 
 ## 教员查询自己教授的员工信息(finished)
 
-#### 位置 /instructor/my_students
+#### 位置 /instructor/my_course_students
 
 #### 权限 教员
 
