@@ -17,7 +17,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, String> {
     public Employee findEmployeeByEmployeeID(String employeeID);
 
     @Query(value = "select new com.huajuan.stafftrainingsystembackend.dto.EmployeeDTO(e.employeeID, e.name, e.password, e.gender, e.arrivalTime, e.email, e.phoneNumber, e.role, d.deptName,e.deptID)" +
-            " from Employee e left join Department d on d.deptID = e.deptID where e.deptID=:deptID")
+            " from Employee e left join Department d on d.deptID = e.deptID")
     public List<EmployeeDTO> findAllEmployeeDTO();
 
     @Query(value = "select new com.huajuan.stafftrainingsystembackend.dto.EmployeeDTO(e.employeeID, e.name, e.password, e.gender, e.arrivalTime, e.email, e.phoneNumber, e.role, d.deptName,e.deptID)" +
