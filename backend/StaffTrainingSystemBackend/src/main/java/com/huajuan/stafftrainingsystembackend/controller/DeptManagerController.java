@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Objects;
 
@@ -221,6 +220,38 @@ public class DeptManagerController {
                 new MyHttpResponseObj(HttpServletResponse.SC_OK, "转部门成功")
         );
 
+    }
+
+    /**
+     * 部门经理获得部门下所有员工的信息，只看通过的成绩
+     *
+     * @return 部门下所有员工的信息
+     */
+    @GetMapping("/department_manager/all_dept_employee_info_passed_only")
+    @PreAuthorize("hasAuthority('department_manager')")
+    public ResponseEntity<List<EmployeeDTO>> allDeptEmployeeInfoPassedOnly(HttpServletRequest httpReq) {
+        //从http头中获得部门经理的id
+        String deptManagerID = JwtTokenUtils.getUsernameByAuthorization(httpReq.getHeader(SecurityConstants.TOKEN_HEADER));
+
+        return ResponseEntity.ok(
+                employeeService.allEmployeeInfoInMyDepartmentPassedOnly(deptManagerID)
+        );
+    }
+
+    /**
+     * 部门经理获得部门下所有员工的信息，只看某一门课的成绩
+     *
+     * @return 部门下所有员工的信息
+     */
+    @GetMapping("/department_manager/all_dept_employee_info_course_id_only")
+    @PreAuthorize("hasAuthority('department_manager')")
+    public ResponseEntity<List<EmployeeDTO>> allDeptEmployeeInfoPassedOnly(HttpServletRequest httpReq, @RequestParam("courseID") String courseID) {
+        //从http头中获得部门经理的id
+        String deptManagerID = JwtTokenUtils.getUsernameByAuthorization(httpReq.getHeader(SecurityConstants.TOKEN_HEADER));
+
+        return ResponseEntity.ok(
+                employeeService.allEmployeeInfoInMyDepartmentCourseIDOnly(deptManagerID, courseID)
+        );
     }
 
 

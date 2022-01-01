@@ -32,7 +32,6 @@ public class ModifyCourseRequest {
     @NotNull(message = "教员编号不能为空")
     private String instructorID;
 
-    @NotNull(message = "教员名字不能为空")
     private String instructorName;
 
     @NotNull(message = "部门信息不能为空")

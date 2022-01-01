@@ -765,7 +765,89 @@ name: string
 
 ## 6.可以根据培训成绩的不同状态、课程类型定向查找（比如只查看培训通过的、或者 只查看某一课程的成绩等）
 
-在1的界面里，由前端进行过滤吧。。。。。。
+### 只查看通过的成绩
+
+#### 位置 /department_manager/all_dept_employee_info_passed_only
+
+#### 权限 部门经理
+
+#### 方法 GET
+
+### 请求参数：无
+
+### 返回体
+
+```
+[
+		{
+			employeeID:string,
+			name:string,
+			password:string,
+			gender:string, #男或女
+			arrivalTime:string, #yyyy-MM-dd
+			email:string, 
+			phoneNumber:string,
+			role:string, #department_manager或admin或student或instructor
+			department:string,
+			deptID:int,
+			scores:[
+				{
+					participateID:int,
+					courseID:string,
+					courseName:string,
+					startDate:string, #yyyy-MM-dd
+					finished:boolean,
+					instructorName:string,
+					score:int
+				}
+			]
+		}......
+]
+
+```
+
+### 只查看某一课程的成绩
+
+#### 位置 /department_manager/all_dept_employee_info_course_id_only
+
+#### 权限 部门经理
+
+#### 方法 GET
+
+### 请求参数：courseID: string
+
+### 返回体
+
+```
+[
+		{
+			employeeID:string,
+			name:string,
+			password:string,
+			gender:string, #男或女
+			arrivalTime:string, #yyyy-MM-dd
+			email:string, 
+			phoneNumber:string,
+			role:string, #department_manager或admin或student或instructor
+			department:string,
+			deptID:int,
+			scores:[
+				{
+					participateID:int,
+					courseID:string,
+					courseName:string,
+					startDate:string, #yyyy-MM-dd
+					finished:boolean,
+					instructorName:string,
+					score:int
+				}
+			]
+		}......
+]
+
+```
+
+
 
 ## 7.可以根据考试的通过次数定向查找（比如查看某课程未通过次数为三次以上的员工）
 

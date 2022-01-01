@@ -298,6 +298,59 @@ public class EmployeeService implements UserDetailsService {
         return res;
     }
 
+    /**
+     * 根据一个部门经理的deptManagerID，找到他部门底下所有的员工的信息。其中员工的成绩只看通过的成绩
+     *
+     * @param deptManagerID 部门经理ID
+     * @return 部门经理所管理的部门下面所有员工的信息
+     */
+    public List<EmployeeDTO> allEmployeeInfoInMyDepartmentPassedOnly(String deptManagerID) {
+
+        //先根据deptManagerID找到所管理的部门
+        Manage manage = manageRepository.findByDeptManagerID(deptManagerID);
+        if (manage == null) {
+            throw new RuntimeException("未找到你所管理的部门，请联系系统管理员");
+        }
+
+        List<EmployeeDTO> res = employeeRepository.findAllEmployeeDTOWithDeptID(manage.getDeptID());
+
+        //注入成绩
+        res.forEach(employeeDTO -> employeeDTO.setScores(participateRepository.findAllPassedScoreDTOWithStudentID(employeeDTO.getEmployeeID())));
+
+        //过滤掉没有通过记录的人
+        res = res.stream().filter(employeeDTO -> !employeeDTO.getScores().isEmpty()).collect(Collectors.toList());
+        return res;
+    }
+
+    /**
+     * 根据一个部门经理的deptManagerID，找到他部门底下所有的员工的信息。其中员工的成绩只看某门课程的成绩
+     *
+     * @param deptManagerID 部门经理ID
+     * @param courseID      课程编号，只看这门课程的成绩
+     * @return 部门经理所管理的部门下面所有员工的信息
+     */
+    public List<EmployeeDTO> allEmployeeInfoInMyDepartmentCourseIDOnly(String deptManagerID, String courseID) {
+
+        //先根据deptManagerID找到所管理的部门
+        Manage manage = manageRepository.findByDeptManagerID(deptManagerID);
+        if (manage == null) {
+            throw new RuntimeException("未找到你所管理的部门，请联系系统管理员");
+        }
+
+        List<EmployeeDTO> res = employeeRepository.findAllEmployeeDTOWithDeptID(manage.getDeptID());
+
+        //注入成绩
+        res.forEach(employeeDTO -> employeeDTO.setScores(
+                        participateRepository.findAllScoreDTOWithStudentIDAndCourseID(employeeDTO.getEmployeeID(), courseID)
+                )
+        );
+
+        //过滤掉没有这门课记录的人
+        res = res.stream().filter(employeeDTO -> !employeeDTO.getScores().isEmpty()).collect(Collectors.toList());
+
+        return res;
+    }
+
 
     /**
      * 根据姓名，查找出员工ID。如果不不存在这个姓名的员工，或是这个姓名的员工数量不止一个，就会抛出异常
@@ -404,7 +457,23 @@ public class EmployeeService implements UserDetailsService {
 
 
     private TransferQualificationDTO getTransferQualificationDTO(EmployeeDTO employeeDTO) {
+
+        //找到所有的不及格或者正在进行的记录
         List<ScoreDTO> pendingOrFailedScoreDTOList = participateRepository.findAllPendingOrFailedScoreDTOWithStudentID(employeeDTO.getEmployeeID());
+
+
+        //找到所有已经通过的课程的课程ID
+        List<ScoreDTO> passedScoreDTOList = participateRepository.findAllPassedScoreDTOWithStudentID(employeeDTO.getEmployeeID());
+        HashSet<String> passedCourseIDSet = new HashSet<>();
+        passedScoreDTOList.forEach(scoreDTO -> {
+            passedCourseIDSet.add(passedScoreDTOList.toString());
+        });
+
+        //过滤，因为考虑到如果一个员工修了一个课程两次，第一次不及格，第二次重修及格。或者第一次及格了，又修了一次正在进行中之类的。应该认为他同样符合转专业的条件
+        pendingOrFailedScoreDTOList = pendingOrFailedScoreDTOList.stream().filter(
+                scoreDTO -> !passedCourseIDSet.contains(scoreDTO.getCourseID())
+        ).collect(Collectors.toList());
+
 
         //如果没有未完成或不通过的课程
         if (pendingOrFailedScoreDTOList.size() == 0) {

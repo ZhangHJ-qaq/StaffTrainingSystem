@@ -3,6 +3,7 @@ package com.huajuan.stafftrainingsystembackend.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.huajuan.stafftrainingsystembackend.dto.CourseDTO;
+import com.huajuan.stafftrainingsystembackend.dto.DeptCourseDTO;
 import com.huajuan.stafftrainingsystembackend.dto.EmployeeDTO;
 import com.huajuan.stafftrainingsystembackend.dto.ScoreDTO;
 import com.huajuan.stafftrainingsystembackend.dto.instructor.TaughtCourseDTO;
@@ -226,13 +227,21 @@ public class CourseService {
 
         //分配
         allDeptCompulsoryCourseIDNeedToAllocate.forEach(courseID -> {
+
+            Teach teach = teachRepository.findById(courseID).orElse(null);
+            if (teach == null) {
+                throw new RuntimeException(
+                        String.format("找不到课程%s的教员，请联系系统管理员", courseID)
+                );
+            }
+
             //添加学生在这门课程中的参与
             Participate participate = new Participate(
                     null,
                     new Date(),
                     false,
                     null,
-                    teachRepository.getById(courseID).getInstructorID(),
+                    teach.getInstructorID(),
                     studentID,
                     courseID
             );
@@ -274,13 +283,33 @@ public class CourseService {
             employeeID = employeeService.findUniqueEmployeeIDByName(name);
         }
 
-        if (!studentRepository.existsById(employeeID)) {//检查这个ID的主人是不是学生
-            throw new RuntimeException("你输入的可能不是学员，必须输入一个学员的ID才能为其分配课程！");
+        Manage manage = manageRepository.findByDeptManagerID(deptManagerID);
+        if (manage == null) {
+            throw new RuntimeException("找不到你管理的部门，请与管理员联系");
         }
 
         if (!employeeService.deptManagerAndEmployeeInSameDepartment(deptManagerID, employeeID)) {
             throw new RuntimeException("你不能为一个不属于自己部门的员工分配课程");
         }
+
+        if (!studentRepository.existsById(employeeID)) {//检查这个ID的主人是不是学生
+            throw new RuntimeException("你输入的可能不是学员，必须输入一个学员的ID才能为其分配课程！");
+        }
+
+        DeptCourseDTO deptCourseDTO = deptCourseRepository.findDeptCourseDTOWithDeptIDAndCourseID(
+                manage.getDeptID(), courseID
+        );
+        if (deptCourseDTO == null) {
+            throw new RuntimeException("你不能分配不属于你部门的课程");
+        }
+
+        Teach teach = teachRepository.findById(courseID).orElse(null);
+        if (teach == null) {
+            throw new RuntimeException(
+                    String.format("找不到课程%s的教员，请联系系统管理员", courseID)
+            );
+        }
+
 
         //尝试插入Participate对象
         Participate participate = new Participate(
@@ -288,7 +317,7 @@ public class CourseService {
                 new Date(),
                 false,
                 null,
-                teachRepository.getById(courseID).getInstructorID(),
+                teach.getInstructorID(),
                 employeeID,
                 courseID
         );

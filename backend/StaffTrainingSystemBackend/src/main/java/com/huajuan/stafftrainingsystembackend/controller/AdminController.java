@@ -123,7 +123,7 @@ public class AdminController {
     @GetMapping("/admin/all_log")
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<List<Log>> allLog() {
-        return ResponseEntity.ok(logRepository.findAll());
+        return ResponseEntity.ok(logRepository.findAllLimit20());
     }
 
 

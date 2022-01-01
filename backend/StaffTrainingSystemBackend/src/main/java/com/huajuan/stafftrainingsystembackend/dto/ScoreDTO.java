@@ -24,4 +24,7 @@ public class ScoreDTO {
     private String instructorName;
     private Integer score;
 
+    public boolean getPassed() {
+        return score != null && score >= 60;
+    }
 }

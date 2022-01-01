@@ -39,6 +39,9 @@ public interface ParticipateRepository extends JpaRepository<Participate, Long> 
             @Param("courseID") String courseID,
             @Param("instructorID") String instructorID);
 
+    @Query("select new com.huajuan.stafftrainingsystembackend.dto.ScoreDTO(p.participateID,p.courseID,c.courseName,p.startDate,p.finished,ins.name,p.score) from Participate p left join Course c on p.courseID=c.courseID left join Employee ins on ins.employeeID=p.instructorID where p.studentID=:studentID and p.courseID=:courseID")
+    public List<ScoreDTO> findAllScoreDTOWithStudentIDAndCourseID(@Param("studentID") String studentID, @Param("courseID") String courseID);
+
 
     /**
      * 根据学生的编号，找到他所有正在进行的课程，或者已经通过的课程的成绩信息
@@ -55,7 +58,7 @@ public interface ParticipateRepository extends JpaRepository<Participate, Long> 
      * @param studentID 学生编号
      * @return 他所有正在进行的课程，或者已经通过的课程的成绩信息
      */
-    @Query("select new com.huajuan.stafftrainingsystembackend.dto.ScoreDTO(p.participateID,p.courseID,c.courseName,p.startDate,p.finished,ins.name,p.score) from Participate p left join Course c on p.courseID=c.courseID left join Employee ins on ins.employeeID=p.instructorID where p.studentID=:studentID and p.score>=60")
+    @Query("select new com.huajuan.stafftrainingsystembackend.dto.ScoreDTO(p.participateID,p.courseID,c.courseName,p.startDate,p.finished,ins.name,p.score) from Participate p left join Course c on p.courseID=c.courseID left join Employee ins on ins.employeeID=p.instructorID where p.studentID=:studentID and p.score>=60 and p.finished=true ")
     public List<ScoreDTO> findAllPassedScoreDTOWithStudentID(@Param("studentID") String studentID);
 
 

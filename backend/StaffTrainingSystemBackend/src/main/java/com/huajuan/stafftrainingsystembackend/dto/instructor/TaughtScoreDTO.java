@@ -23,4 +23,8 @@ public class TaughtScoreDTO {
     private Date startDate;
     private Boolean finished;
     private Integer score;
+
+    public boolean getPassed() {
+        return score != null && score >= 60;
+    }
 }
