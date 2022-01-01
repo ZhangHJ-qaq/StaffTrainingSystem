@@ -11,10 +11,9 @@ import javax.validation.constraints.NotNull;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeptCourseDTORequest{
+public class DeptCourseDTORequest {
     @NotNull(message = "部门编号不能为空给")
     private Integer deptID;
-    @NotNull(message = "部门名不能为空")
     private String deptName;
     @NotNull(message = "是否必修不能为空")
     private Boolean compulsory;
